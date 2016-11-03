@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/content_main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorPrimaryDark"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context="wiseowl.com.au.reaction.Activity.MainActivity"
+    tools:showIn="@layout/app_bar_main">
+
+    <RelativeLayout
+        android:id="@+id/topView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/btm_btn"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin">
+
+        <TextView
+            android:id="@+id/question_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/nameEditText"
+            android:layout_centerHorizontal="true"
+            android:fontFamily="sans-serif-light"
+            android:gravity="center"
+            android:padding="@dimen/activity_horizontal_margin"
+            android:text="Enter the candiates name then click start.\nYou will be ask 4 questions"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="@color/white" />
+
+        <EditText
+            android:id="@+id/nameEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:background="@drawable/edittext_background"
+            android:fontFamily="sans-serif-light"
+            android:hint="Candidate name"
+            android:padding="@dimen/activity_horizontal_margin"
+            android:textColor="@color/white"
+            android:textColorHint="@color/hintColour"
+            android:textSize="25sp" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/btm_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:background="@color/colorPrimary"
+        android:padding="@dimen/activity_horizontal_margin">
+
+        <Button
+            android:id="@+id/next"
+            android:layout_width="200sp"
+            android:layout_height="200sp"
+            android:layout_centerInParent="true"
+            android:background="@drawable/btn_selector"
+            android:fontFamily="sans-serif-light"
+            android:text="@string/send"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="@color/white" />
+
+    </RelativeLayout>
+</RelativeLayout>
