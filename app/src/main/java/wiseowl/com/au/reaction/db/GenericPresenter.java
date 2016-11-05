@@ -20,6 +20,7 @@ public class GenericPresenter {
         return realmController.addAsync(model);
     }
 
+
     public <T extends RealmObject> void delete(T model) {
         realmController.getRealm().beginTransaction();
         model.deleteFromRealm();

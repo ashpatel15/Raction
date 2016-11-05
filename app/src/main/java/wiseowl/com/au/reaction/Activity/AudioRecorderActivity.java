@@ -8,11 +8,13 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.animation.AccelerateInterpolator;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -24,6 +26,7 @@ import java.io.File;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import omrecorder.AudioChunk;
 import omrecorder.OmRecorder;
 import omrecorder.PullTransport;
@@ -43,7 +46,6 @@ import static wiseowl.com.au.reaction.R.id.restart;
 public class AudioRecorderActivity extends AppCompatActivity implements PullTransport.OnAudioChunkPulledListener, MediaPlayer.OnCompletionListener {
     private String[] mStringQ;
     private String filePath;
-    String rootFile = "";
     private AudioSource source;
     private AudioChannel channel;
     private AudioSampleRate sampleRate;
@@ -61,6 +63,8 @@ public class AudioRecorderActivity extends AppCompatActivity implements PullTran
     private boolean isRecording;
     private GLAudioVisualizationView visualizerView;
 
+    @BindView(R.id.overView)
+    RelativeLayout overView;
     @BindView(R.id.content)
     RelativeLayout contentLayout;
     @BindView(R.id.tvQuestion)
@@ -76,6 +80,11 @@ public class AudioRecorderActivity extends AppCompatActivity implements PullTran
     @BindView(R.id.play)
     ImageButton playView;
 
+    @OnClick(R.id.doneRatingBtn)
+    void doneClick(){
+        fadeOutAndHideImage(overView, true); //fadeout rating animation
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,7 +93,7 @@ public class AudioRecorderActivity extends AppCompatActivity implements PullTran
         ButterKnife.bind(this);
 
         mStringQ = getResources().getStringArray(R.array.questions);//gets the string array from xml
-
+//        overView.setAlpha(0);   //set overview alpha to 0
         if (savedInstanceState != null) {
 //            filePath = savedInstanceState.getString(AndroidAudioRecorder.EXTRA_FILE_PATH);
             source = (AudioSource) savedInstanceState.getSerializable(AndroidAudioRecorder.EXTRA_SOURCE);
@@ -107,7 +116,7 @@ public class AudioRecorderActivity extends AppCompatActivity implements PullTran
 
 
         filePath = Environment.getExternalStorageDirectory() + "/" + name + "Q" + pos + ".wav"; //set file path
-        Log.i("ash", "1 - " + filePath );
+//        Log.i("ash", "1 - " + filePath );
         if (keepDisplayOn) {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
@@ -135,7 +144,6 @@ public class AudioRecorderActivity extends AppCompatActivity implements PullTran
                 .setLayerColors(new int[]{color})
                 .build();
 
-        Log.i("ash",  String.format(mStringQ[pos], "anish") );
         tvQuestion.setText(String.format(mStringQ[pos],name));
 
         contentLayout.setBackgroundColor(Util.getDarkerColor(color));
@@ -154,6 +162,7 @@ public class AudioRecorderActivity extends AppCompatActivity implements PullTran
             recordView.setColorFilter(Color.BLACK);
             playView.setColorFilter(Color.BLACK);
         }
+
     }
 
     @Override
@@ -216,23 +225,10 @@ public class AudioRecorderActivity extends AppCompatActivity implements PullTran
             finish();
         } else if (i == R.id.action_save) {
             if (pos < (mStringQ.length - 1)) {
-                pos++;//increment question
-                stopRecording(); //stop the recording
-                setResult(RESULT_OK);
-                restart(); //restart recording
-
-                tvQuestion.setText(String.format(mStringQ[pos],name)); //update new question
-                filePath = Environment.getExternalStorageDirectory() + "/" + name + "Q" + pos + ".wav"; //set new file path
-                Log.i("ash", filePath );
-                CandidateModel model = new GenericPresenter().addAsync(CandidateModel.newBuilder()
-                        .name(name)
-                        .filePath(filePath)
-                        .magnitude(20)
-                        .polarity(100)
-                        .sentiment("I love this")
-                        .build()); //save new path to Realm db
+                nextQuestion();
             } else {
                 //Complete stop of recording
+                fadeOutAndHideImage(overView, false); //fade in rating animation
                 stopRecording();
                 setResult(RESULT_OK);
                 finish();
@@ -241,6 +237,25 @@ public class AudioRecorderActivity extends AppCompatActivity implements PullTran
 
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void nextQuestion(){
+
+        pos++;              //increment question
+        stopRecording();    //stop the recording
+        setResult(RESULT_OK);
+        restart();          //restart recording
+
+        tvQuestion.setText(String.format(mStringQ[pos],name)); //update new question
+        filePath = Environment.getExternalStorageDirectory() + "/" + name + "Q" + pos + ".wav"; //set new file path
+
+        CandidateModel model = new GenericPresenter().addAsync(CandidateModel.newBuilder()
+                .name(name)
+                .filePath(filePath)
+                .magnitude(20)
+                .polarity(100)
+                .sentiment("I love this")
+                .build()); //save new path to Realm db
     }
 
     @Override
@@ -321,15 +336,37 @@ public class AudioRecorderActivity extends AppCompatActivity implements PullTran
         visualizerView.linkTo(visualizerHandler);
 
         if (recorder == null) {
-//            timerView.setText("00:00:00");
-
             recorder = OmRecorder.wav(
                     new PullTransport.Default(Util.getMic(source, channel, sampleRate), AudioRecorderActivity.this),
                     new File(filePath));
         }
         recorder.resumeRecording();
+    }
 
-//        startTimer();
+    private void fadeOutAndHideImage(final RelativeLayout view, final boolean fadeout) {
+        Animation fade;
+        if (fadeout) {
+            fade = new AlphaAnimation(1, 0);
+        } else {
+            fade = new AlphaAnimation(0, 1);
+        }
+        fade.setInterpolator(new AccelerateInterpolator());
+        fade.setDuration(1000);
+
+        fade.setAnimationListener(new Animation.AnimationListener() {
+            public void onAnimationEnd(Animation animation) {
+                if (fadeout) {view.setVisibility(View.GONE);}
+                else {view.setVisibility(View.VISIBLE);}
+            }
+
+            public void onAnimationRepeat(Animation animation) {
+            }
+
+            public void onAnimationStart(Animation animation) {
+            }
+        });
+
+        view.startAnimation(fade);
     }
 
     private void pauseRecording() {
@@ -353,7 +390,6 @@ public class AudioRecorderActivity extends AppCompatActivity implements PullTran
             recorder.pauseRecording();
         }
         tutorView.setText(getResources().getString(R.string.tutorPlay));
-//        stopTimer();
     }
 
     private void stopRecording() {
@@ -362,13 +398,10 @@ public class AudioRecorderActivity extends AppCompatActivity implements PullTran
             visualizerHandler.stop();
         }
 
-//        recorderSecondsElapsed = 0;
         if (recorder != null) {
             recorder.stopRecording();
             recorder = null;
         }
-
-//        stopTimer();
     }
 
     private void startPlaying() {
@@ -387,13 +420,10 @@ public class AudioRecorderActivity extends AppCompatActivity implements PullTran
                 }
             });
 
-//            timerView.setText("00:00:00");
             statusView.setText(R.string.aar_playing);
             statusView.setVisibility(View.VISIBLE);
             playView.setImageResource(R.drawable.aar_ic_stop);
 
-//            playerSecondsElapsed = 0;
-//            startTimer();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -401,6 +431,7 @@ public class AudioRecorderActivity extends AppCompatActivity implements PullTran
 
     private void stopPlaying() {
         statusView.setText("");
+
         statusView.setVisibility(View.INVISIBLE);
         playView.setImageResource(R.drawable.aar_ic_play);
 
@@ -416,8 +447,6 @@ public class AudioRecorderActivity extends AppCompatActivity implements PullTran
             } catch (Exception e) {
             }
         }
-
-//        stopTimer();
     }
 
     private boolean isPlaying() {

@@ -6,5 +6,6 @@
     <color name="textColour">#414141</color>
     <color name="white">#fff</color>
     <color name="hintColour">#bebebe</color>
+    <color name="overlayBackground">#c4151515</color>
 </resources>
 <!--01b1a3-->

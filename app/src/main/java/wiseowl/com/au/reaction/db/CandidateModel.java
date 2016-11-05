@@ -19,9 +19,7 @@ public class CandidateModel extends RealmObject {
 
 
 
-    public CandidateModel() {
-
-    }
+    public CandidateModel() {}
 
     public CandidateModel(Builder builder) {
         this.created = builder.created;
