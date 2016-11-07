@@ -62,6 +62,8 @@ public class AudioRecorderActivity extends AppCompatActivity implements PullTran
     private MenuItem saveMenuItem;
     private boolean isRecording;
     private GLAudioVisualizationView visualizerView;
+    private Animation animationFadeIn;
+    private Animation animationFadeOut;
 
     @BindView(R.id.overView)
     RelativeLayout overView;
@@ -81,8 +83,13 @@ public class AudioRecorderActivity extends AppCompatActivity implements PullTran
     ImageButton playView;
 
     @OnClick(R.id.doneRatingBtn)
-    void doneClick(){
-        fadeOutAndHideImage(overView, true); //fadeout rating animation
+    void doneClick() {
+        if (pos < (mStringQ.length - 1)) {
+            fadeOutAndHideImage(overView, true, false); //fadeout rating animation
+        }else{
+            fadeOutAndHideImage(overView, true, true); //fadeout rating animation
+        }
+
     }
 
 
@@ -93,7 +100,6 @@ public class AudioRecorderActivity extends AppCompatActivity implements PullTran
         ButterKnife.bind(this);
 
         mStringQ = getResources().getStringArray(R.array.questions);//gets the string array from xml
-//        overView.setAlpha(0);   //set overview alpha to 0
         if (savedInstanceState != null) {
 //            filePath = savedInstanceState.getString(AndroidAudioRecorder.EXTRA_FILE_PATH);
             source = (AudioSource) savedInstanceState.getSerializable(AndroidAudioRecorder.EXTRA_SOURCE);
@@ -116,7 +122,6 @@ public class AudioRecorderActivity extends AppCompatActivity implements PullTran
 
 
         filePath = Environment.getExternalStorageDirectory() + "/" + name + "Q" + pos + ".wav"; //set file path
-//        Log.i("ash", "1 - " + filePath );
         if (keepDisplayOn) {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
@@ -144,7 +149,7 @@ public class AudioRecorderActivity extends AppCompatActivity implements PullTran
                 .setLayerColors(new int[]{color})
                 .build();
 
-        tvQuestion.setText(String.format(mStringQ[pos],name));
+        tvQuestion.setText(String.format(mStringQ[pos], name));
 
         contentLayout.setBackgroundColor(Util.getDarkerColor(color));
         contentLayout.addView(visualizerView, 0);
@@ -225,13 +230,12 @@ public class AudioRecorderActivity extends AppCompatActivity implements PullTran
             finish();
         } else if (i == R.id.action_save) {
             if (pos < (mStringQ.length - 1)) {
+                fadeOutAndHideImage(overView, false, false); //fade in rating animation
                 nextQuestion();
             } else {
                 //Complete stop of recording
-                fadeOutAndHideImage(overView, false); //fade in rating animation
-                stopRecording();
-                setResult(RESULT_OK);
-                finish();
+                fadeOutAndHideImage(overView, false, false);
+
 
             }
 
@@ -239,14 +243,14 @@ public class AudioRecorderActivity extends AppCompatActivity implements PullTran
         return super.onOptionsItemSelected(item);
     }
 
-    private void nextQuestion(){
+    private void nextQuestion() {
 
         pos++;              //increment question
         stopRecording();    //stop the recording
         setResult(RESULT_OK);
         restart();          //restart recording
 
-        tvQuestion.setText(String.format(mStringQ[pos],name)); //update new question
+        tvQuestion.setText(String.format(mStringQ[pos], name)); //update new question
         filePath = Environment.getExternalStorageDirectory() + "/" + name + "Q" + pos + ".wav"; //set new file path
 
         CandidateModel model = new GenericPresenter().addAsync(CandidateModel.newBuilder()
@@ -302,7 +306,7 @@ public class AudioRecorderActivity extends AppCompatActivity implements PullTran
 
     }
 
-    private void restart(){
+    private void restart() {
         if (isRecording) {
             stopRecording();
         } else if (isPlaying()) {
@@ -335,15 +339,17 @@ public class AudioRecorderActivity extends AppCompatActivity implements PullTran
         visualizerHandler = new VisualizerHandler();
         visualizerView.linkTo(visualizerHandler);
 
-        if (recorder == null) {
+        if (recorder == null && source != null) {
             recorder = OmRecorder.wav(
                     new PullTransport.Default(Util.getMic(source, channel, sampleRate), AudioRecorderActivity.this),
                     new File(filePath));
         }
-        recorder.resumeRecording();
+        if(recorder != null) {
+            recorder.resumeRecording();
+        }
     }
 
-    private void fadeOutAndHideImage(final RelativeLayout view, final boolean fadeout) {
+    private void fadeOutAndHideImage(final RelativeLayout view, final boolean fadeout, final boolean finish) {
         Animation fade;
         if (fadeout) {
             fade = new AlphaAnimation(1, 0);
@@ -351,18 +357,28 @@ public class AudioRecorderActivity extends AppCompatActivity implements PullTran
             fade = new AlphaAnimation(0, 1);
         }
         fade.setInterpolator(new AccelerateInterpolator());
-        fade.setDuration(1000);
-
+        fade.setDuration(500);
         fade.setAnimationListener(new Animation.AnimationListener() {
             public void onAnimationEnd(Animation animation) {
-                if (fadeout) {view.setVisibility(View.GONE);}
-                else {view.setVisibility(View.VISIBLE);}
+                if (fadeout) {
+                    view.setVisibility(View.GONE);
+                } else {
+                    view.setVisibility(View.VISIBLE);
+                }
+
+                if(finish){
+                    stopRecording();
+                    setResult(RESULT_OK);
+                    finish();
+                }
             }
 
-            public void onAnimationRepeat(Animation animation) {
-            }
+            public void onAnimationRepeat(Animation animation) {}
 
             public void onAnimationStart(Animation animation) {
+                if(view.getVisibility() == View.GONE){
+                    view.setVisibility(View.VISIBLE);
+                }
             }
         });
 

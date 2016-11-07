@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+
     <RelativeLayout
         android:id="@+id/content"
         android:layout_width="match_parent"
@@ -109,15 +112,36 @@
 
 
     </RelativeLayout>
+
     <RelativeLayout
         android:id="@+id/overView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:visibility="invisible"
-        android:background="@color/overlayBackground">
+        android:background="@color/overlayBackground"
+        android:visibility="gone">
 
         <RelativeLayout
+            android:id="@+id/indicatorLayout"
+            android:layout_width="match_parent"
+            android:layout_height="400sp"
+            android:layout_centerInParent="true"
+            android:background="@color/colorPrimaryDark">
 
+            <wiseowl.com.au.reaction.CustomUi.ProgressDialogBar
+                android:id="@+id/progress"
+                android:layout_centerInParent="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:color="#FFF"
+                android:radius="5dp"
+                app:dd_animationDuration="500"
+                app:dd_horizontalSpacing="8dp"
+                app:dd_numDots="6"
+                app:dd_scaleMultiplier="1.5" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/rateLayout"
             android:layout_width="match_parent"
             android:layout_height="400sp"
             android:layout_centerInParent="true"
@@ -142,6 +166,61 @@
                 android:textColor="@color/white"
                 android:textSize="20sp" />
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:orientation="horizontal"
+                android:weightSum="1">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.33"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/poor"
+                        android:layout_width="70sp"
+                        android:layout_height="70sp"
+                        android:background="@drawable/btn_selector"
+                        android:text="Poor"
+                        android:textColor="@color/colorAccent" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.33"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/okay"
+                        android:layout_width="70sp"
+                        android:layout_height="70sp"
+                        android:background="@drawable/btn_selector"
+                        android:text="Okay"
+                        android:textColor="@color/colorAccent" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.33"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/great"
+                        android:layout_width="70sp"
+                        android:layout_height="70sp"
+                        android:background="@drawable/btn_selector"
+                        android:text="Great"
+                        android:textColor="@color/colorAccent" />
+                </LinearLayout>
+            </LinearLayout>
 
             <Button
                 android:id="@+id/doneRatingBtn"

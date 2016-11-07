@@ -21,6 +21,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import wiseowl.com.au.reaction.AudioRecorder.AndroidAudioRecorder;
+import wiseowl.com.au.reaction.CustomUi.ProgressDialogBar;
 import wiseowl.com.au.reaction.R;
 import wiseowl.com.au.reaction.Util;
 import wiseowl.com.au.reaction.model.AudioChannel;
@@ -55,9 +56,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             startRecoding("No Name");
         }
 
-//         /filePath = Environment.getExternalStorageDirectory() + "/" + name + "Q" + 0 + ".wav"; //set file path
-//        Log.i("ash", filePath);
-
         Log.i("Anish", "has permissions");
 
     }
@@ -75,19 +73,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setSupportActionBar(toolbar);
         topView.setBackgroundColor(Util.getDarkerColor(ContextCompat.getColor(this, R.color.colorPrimaryDark)));
 
-//        tvQuestion.setText(mStringQ[0]); //sets the string item
-//        pos = 0;//sets first pos of questions
-
-//        Log.i("ash",  String.format(mStringQ[0], "anish") );
-//        if(model!= null){Log.i("anish", "sentiment - " +model.getSentiment());}
-
-
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
         navigationView.setNavigationItemSelectedListener(this);
+
+        ProgressDialogBar mDilatingDotsProgressBar = (ProgressDialogBar) findViewById(R.id.progress);
+
+// show progress bar and start animating
+        mDilatingDotsProgressBar.showNow();
     }
 
 
