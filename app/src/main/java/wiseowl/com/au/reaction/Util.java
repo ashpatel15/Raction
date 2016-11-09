@@ -1,12 +1,18 @@
 package wiseowl.com.au.reaction;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.media.AudioFormat;
 import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.widget.Toast;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 
 import wiseowl.com.au.reaction.model.AudioChannel;
 import wiseowl.com.au.reaction.model.AudioSampleRate;
@@ -20,7 +26,7 @@ public class Util {
     private Util() {
     }
 
-    public static void wait(int millis, Runnable callback){
+    public static void wait(int millis, Runnable callback) {
         HANDLER.postDelayed(callback, millis);
     }
 
@@ -35,10 +41,10 @@ public class Util {
     }
 
     public static boolean isBrightColor(int color) {
-        if(android.R.color.transparent == color) {
+        if (android.R.color.transparent == color) {
             return true;
         }
-        int [] rgb = {Color.red(color), Color.green(color), Color.blue(color)};
+        int[] rgb = {Color.red(color), Color.green(color), Color.blue(color)};
         int brightness = (int) Math.sqrt(
                 rgb[0] * rgb[0] * 0.241 +
                         rgb[1] * rgb[1] * 0.691 +
@@ -59,11 +65,48 @@ public class Util {
     }
 
 
-    public static void requestPermission(Activity activity, String permission) {
-        if (ContextCompat.checkSelfPermission(activity, permission)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(activity, new String[]{permission}, 0);
+    public static void requestPermission(Activity activity, String[] permission) {
+        for(String perm : permission){
+            if (ContextCompat.checkSelfPermission(activity, perm) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(activity, permission, 4);
+            }
         }
     }
+
+    public static File getFileFromPath(String path, Context context) {
+        try {
+            //File to be overwriten
+            File file = new File(context.getExternalCacheDir() + File.separator + "audio.wav");
+            FileOutputStream fileOutputStream = new FileOutputStream(file);
+
+            //recorded file
+            File fileInput = new File(path);
+            FileInputStream fileInputStream = new FileInputStream(fileInput);
+//            InputStream inputStream =  context.getResources().openRawResource(R.raw.test3);
+
+
+
+            byte buf[] = new byte[1024];
+            int len;
+            while ((len = fileInputStream.read(buf)) > 0) {
+                fileOutputStream.write(buf, 0, len);
+            }
+
+            fileOutputStream.close();
+            fileInputStream.close();
+
+            String s = "file : " + file.length() + " - " + file.exists();
+            Toast.makeText(context, s, Toast.LENGTH_SHORT).show();
+
+            if (file.exists())
+                return file;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
 
 }

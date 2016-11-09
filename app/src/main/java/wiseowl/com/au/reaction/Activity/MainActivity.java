@@ -10,7 +10,6 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
@@ -21,7 +20,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import wiseowl.com.au.reaction.AudioRecorder.AndroidAudioRecorder;
-import wiseowl.com.au.reaction.CustomUi.ProgressDialogBar;
 import wiseowl.com.au.reaction.R;
 import wiseowl.com.au.reaction.Util;
 import wiseowl.com.au.reaction.model.AudioChannel;
@@ -55,19 +53,21 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }else{
             startRecoding("No Name");
         }
-
-        Log.i("Anish", "has permissions");
-
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Util.requestPermission(this, Manifest.permission.RECORD_AUDIO);
-        Util.requestPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        Util.requestPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);
-        Util.requestPermission(this, Manifest.permission.MODIFY_AUDIO_SETTINGS);
+        String[] per = {
+                Manifest.permission.RECORD_AUDIO,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.MODIFY_AUDIO_SETTINGS};
+        Util.requestPermission(this,per);
+//        Util.requestPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+//        Util.requestPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);
+//        Util.requestPermission(this, Manifest.permission.MODIFY_AUDIO_SETTINGS);
 
         ButterKnife.bind(this);
         setSupportActionBar(toolbar);
@@ -80,10 +80,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         navigationView.setNavigationItemSelectedListener(this);
 
-        ProgressDialogBar mDilatingDotsProgressBar = (ProgressDialogBar) findViewById(R.id.progress);
 
-// show progress bar and start animating
-        mDilatingDotsProgressBar.showNow();
     }
 
 

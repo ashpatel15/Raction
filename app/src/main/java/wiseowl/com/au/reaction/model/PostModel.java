@@ -8,8 +8,8 @@ public class PostModel {
 
 
     private String message;
-    private Integer polarity;
-    private Double magnitude;
+    private int polarity;
+    private double magnitude;
 //    private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     /**
@@ -34,18 +34,18 @@ public class PostModel {
     /**
      * @return The polarity
      */
-    public Integer getPolarity() {
+    public int getPolarity() {
         return polarity;
     }
 
     /**
      * @param polarity The polarity
      */
-    public void setPolarity(Integer polarity) {
+    public void setPolarity(int polarity) {
         this.polarity = polarity;
     }
 
-    public PostModel withPolarity(Integer polarity) {
+    public PostModel withPolarity(int polarity) {
         this.polarity = polarity;
         return this;
     }
@@ -53,14 +53,14 @@ public class PostModel {
     /**
      * @return The magnitude
      */
-    public Double getMagnitude() {
+    public double getMagnitude() {
         return magnitude;
     }
 
     /**
      * @param magnitude The magnitude
      */
-    public void setMagnitude(Double magnitude) {
+    public void setMagnitude(double magnitude) {
         this.magnitude = magnitude;
     }
 

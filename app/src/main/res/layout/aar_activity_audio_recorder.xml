@@ -118,27 +118,9 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/overlayBackground"
+        android:onClick="stopClick"
         android:visibility="gone">
 
-        <RelativeLayout
-            android:id="@+id/indicatorLayout"
-            android:layout_width="match_parent"
-            android:layout_height="400sp"
-            android:layout_centerInParent="true"
-            android:background="@color/colorPrimaryDark">
-
-            <wiseowl.com.au.reaction.CustomUi.ProgressDialogBar
-                android:id="@+id/progress"
-                android:layout_centerInParent="true"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:color="#FFF"
-                android:radius="5dp"
-                app:dd_animationDuration="500"
-                app:dd_horizontalSpacing="8dp"
-                app:dd_numDots="6"
-                app:dd_scaleMultiplier="1.5" />
-        </RelativeLayout>
 
         <RelativeLayout
             android:id="@+id/rateLayout"
@@ -148,6 +130,7 @@
             android:background="@color/colorPrimaryDark">
 
             <TextView
+                android:id="@+id/magText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="sans-serif-thin"
@@ -157,6 +140,7 @@
                 android:textSize="20sp" />
 
             <TextView
+                android:id="@+id/polText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentRight="true"
@@ -166,10 +150,23 @@
                 android:textColor="@color/white"
                 android:textSize="20sp" />
 
-            <LinearLayout
+            <TextView
+                android:id="@+id/mesgText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
+                android:layout_below="@+id/polText"
+                android:fontFamily="sans-serif-thin"
+                android:gravity="center"
+                android:padding="@dimen/activity_horizontal_margin"
+                android:textColor="@color/white"
+                android:textSize="20sp" />
+
+            <LinearLayout
+                android:id="@+id/ratingText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_above="@+id/doneRatingBtn"
+                android:layout_marginBottom="10dp"
                 android:orientation="horizontal"
                 android:weightSum="1">
 
@@ -186,7 +183,7 @@
                         android:layout_height="70sp"
                         android:background="@drawable/btn_selector"
                         android:text="Poor"
-                        android:textColor="@color/colorAccent" />
+                        android:textColor="@drawable/text_selector_black_white" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -202,7 +199,7 @@
                         android:layout_height="70sp"
                         android:background="@drawable/btn_selector"
                         android:text="Okay"
-                        android:textColor="@color/colorAccent" />
+                        android:textColor="@drawable/text_selector_black_white" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -218,7 +215,7 @@
                         android:layout_height="70sp"
                         android:background="@drawable/btn_selector"
                         android:text="Great"
-                        android:textColor="@color/colorAccent" />
+                        android:textColor="@drawable/text_selector_black_white" />
                 </LinearLayout>
             </LinearLayout>
 
@@ -232,8 +229,39 @@
                 android:background="@drawable/btn_selector"
                 android:fontFamily="sans-serif-thin"
                 android:text="done"
-                android:textColor="@color/white"
+                android:textColor="@drawable/text_selector_black_white"
                 android:textSize="20sp" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/uploading"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true">
+
+            <TextView
+                android:id="@+id/upText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-thin"
+                android:gravity="center"
+                android:paddingBottom="@dimen/activity_horizontal_margin"
+                android:text="Nice, we are uploading as you read this"
+                android:textColor="@color/white"
+                android:textSize="15sp" />
+
+            <wiseowl.com.au.reaction.CustomUi.ProgressDialogBar
+                android:id="@+id/progress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/upText"
+                android:layout_centerInParent="true"
+                android:color="#FFF"
+                android:radius="5dp"
+                app:dd_animationDuration="500"
+                app:dd_horizontalSpacing="8dp"
+                app:dd_numDots="6"
+                app:dd_scaleMultiplier="1.5" />
         </RelativeLayout>
 
     </RelativeLayout>

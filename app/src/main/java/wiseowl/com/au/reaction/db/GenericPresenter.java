@@ -38,25 +38,10 @@ public class GenericPresenter {
         return realmController.findAllAsync(c);
     }
 
-    public <T extends RealmObject> T getSingle(Class<T> c, String id) {
-        return realmController.getSingle(c, id);
-    }
 
     public <T extends RealmObject> T getSingle(Class<T> c, String field, String id) {
         return realmController.getSingle(c, field, id);
     }
-
-//    public <T extends RealmObject> RealmResults<T> getListBetweenDates(Class<T> c, String datefield, Date from, Date to) {
-//        return realmController.getListBetweenDates(c, datefield, from, to);
-//    }
-//
-//    public <T extends RealmObject> RealmResults<T> getListBetweenDatesAsync(Class<T> c, String datefield, Date from, Date to) {
-//        return realmController.getListsBetweenDatesAsync(c, datefield, from, to);
-//    }
-//
-//    public <T extends RealmObject> RealmResults<T> getListFromDate(Class<T> c, String datefield, Date from) {
-//        return realmController.findAllFromDate(c, datefield, from);
-//    }
 
     public <T extends RealmObject> void deleteAll(Class<T> c) {
         realmController.getRealm().beginTransaction();

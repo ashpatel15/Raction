@@ -19,7 +19,6 @@
         android:paddingRight="@dimen/activity_horizontal_margin">
 
 
-
         <TextView
             android:id="@+id/question_text"
             android:layout_width="wrap_content"
@@ -41,6 +40,10 @@
             android:background="@drawable/edittext_background"
             android:fontFamily="sans-serif-light"
             android:hint="Candidate name"
+            android:imeOptions="actionDone"
+            android:inputType="text"
+            android:maxLines="1"
+            android:lines="1"
             android:padding="@dimen/activity_horizontal_margin"
             android:textColor="@color/white"
             android:textColorHint="@color/hintColour"
@@ -64,7 +67,7 @@
             android:fontFamily="sans-serif-light"
             android:text="@string/send"
             android:textAppearance="?android:attr/textAppearanceMedium"
-            android:textColor="@color/white" />
+            android:textColor="@drawable/text_selector_black_white" />
 
     </RelativeLayout>
 </RelativeLayout>

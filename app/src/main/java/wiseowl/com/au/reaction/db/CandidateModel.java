@@ -4,22 +4,22 @@ import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
 
 /**
- * Created by anipatel1 on 3/08/16.
+ * Created by anipatel1 on 3/11/16.
  */
 public class CandidateModel extends RealmObject {
 
-
-    private String created;
-    private String name;
     @PrimaryKey
     private String filePath;
-    private int magnitude;
+    private String created;
+    private String name;
+    private double magnitude;
     private int polarity;
     private String sentiment;
+    private String rating;
 
 
-
-    public CandidateModel() {}
+    public CandidateModel() {
+    }
 
     public CandidateModel(Builder builder) {
         this.created = builder.created;
@@ -28,6 +28,7 @@ public class CandidateModel extends RealmObject {
         this.magnitude = builder.magnitude;
         this.polarity = builder.polarity;
         this.sentiment = builder.sentiment;
+        this.rating = builder.rating;
 
     }
 
@@ -35,9 +36,11 @@ public class CandidateModel extends RealmObject {
         private String created;
         private String name;
         private String filePath;
-        private int magnitude;
+        private double magnitude;
         private int polarity;
         private String sentiment;
+        private String rating;
+
         public Builder() {
             Long tsLong = System.currentTimeMillis() / 1000;
 
@@ -59,7 +62,7 @@ public class CandidateModel extends RealmObject {
             return this;
         }
 
-        public Builder magnitude(int magnitude) {
+        public Builder magnitude(double magnitude) {
             this.magnitude = magnitude;
             return this;
         }
@@ -71,6 +74,11 @@ public class CandidateModel extends RealmObject {
 
         public Builder sentiment(String sentiment) {
             this.sentiment = sentiment;
+            return this;
+        }
+
+        public Builder rating(String rating) {
+            this.rating = rating;
             return this;
         }
 
@@ -101,7 +109,9 @@ public class CandidateModel extends RealmObject {
     }
 
     public void setName(String name) {
+        RealmController.getInstance().getRealm().beginTransaction();
         this.name = name;
+        RealmController.getInstance().getRealm().commitTransaction();
     }
 
     public String getFilePath() {
@@ -109,15 +119,19 @@ public class CandidateModel extends RealmObject {
     }
 
     public void setFilePath(String filePath) {
+        RealmController.getInstance().getRealm().beginTransaction();
         this.filePath = filePath;
+        RealmController.getInstance().getRealm().commitTransaction();
     }
 
-    public int getMagnitude() {
+    public double getMagnitude() {
         return magnitude;
     }
 
-    public void setMagnitude(int magnitude) {
+    public void setMagnitude(double magnitude) {
+        RealmController.getInstance().getRealm().beginTransaction();
         this.magnitude = magnitude;
+        RealmController.getInstance().getRealm().commitTransaction();
     }
 
     public int getPolarity() {
@@ -125,7 +139,9 @@ public class CandidateModel extends RealmObject {
     }
 
     public void setPolarity(int polarity) {
+        RealmController.getInstance().getRealm().beginTransaction();
         this.polarity = polarity;
+        RealmController.getInstance().getRealm().commitTransaction();
     }
 
     public String getSentiment() {
@@ -133,56 +149,20 @@ public class CandidateModel extends RealmObject {
     }
 
     public void setSentiment(String sentiment) {
+        RealmController.getInstance().getRealm().beginTransaction();
         this.sentiment = sentiment;
+        RealmController.getInstance().getRealm().commitTransaction();
     }
 
-//    public Date getDate() {
-//        return date;
-//    }
-//
-//    public void setDate(final Date date) {
-////        RealmController.getInstance().getRealm().beginTransaction();
-//        this.date = date;
-////        RealmController.getInstance().getRealm().commitTransaction();
-//    }
-//
-//    public int getcD4Count() {
-//        return cD4Count;
-//    }
-//
-//    public void setcD4Count(final int cD4Count) {
-////        RealmController.getInstance().getRealm().beginTransaction();
-//        this.cD4Count = cD4Count;
-////        RealmController.getInstance().getRealm().commitTransaction();
-//    }
-//
-//    public int getcD4Percent() {
-//        return cD4Percent;
-//    }
-//
-//    public void setcD4Percent(final int cD4Percent) {
-////        RealmController.getInstance().getRealm().beginTransaction();
-//        this.cD4Percent = cD4Percent;
-////        RealmController.getInstance().getRealm().commitTransaction();
-//    }
-//
-//
-//    public String getUniqueDate() {
-//        return uniqueDate;
-//    }
-//
-//    public void setUniqueDate(final String uniqueDate) {
-////        RealmController.getInstance().getRealm().beginTransaction();
-//        this.uniqueDate = uniqueDate;
-//    }
-//
-//    public int getViralLoad() {
-//        return viralLoad;
-//    }
-//
-//    public void setViralLoad(final int viralLoad) {
-////        RealmController.getInstance().getRealm().beginTransaction();
-//        this.viralLoad = viralLoad;
-////        RealmController.getInstance().getRealm().commitTransaction();
-//    }
+    public String getRating() {
+        return rating;
+    }
+
+    public void setRating(String rating) {
+        RealmController.getInstance().getRealm().beginTransaction();
+        this.rating = rating;
+        RealmController.getInstance().getRealm().commitTransaction();
+    }
+
+
 }

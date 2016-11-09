@@ -1,14 +1,9 @@
-package wiseowl.com.au.reaction.Activity;
+package wiseowl.com.au.reaction;
 
-import android.app.ProgressDialog;
+import android.app.Activity;
 import android.content.Context;
-import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
-import android.widget.Toast;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.KeyManagementException;
@@ -33,62 +28,42 @@ import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.RequestBody;
-import okhttp3.ResponseBody;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.Multipart;
 import retrofit2.http.POST;
 import retrofit2.http.Part;
-import wiseowl.com.au.reaction.R;
+import wiseowl.com.au.reaction.model.PostModel;
 
-public class RetrofitActivity extends AppCompatActivity {
+/**
+ * Created by anish.patel on 7/11/2016.
+ */
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        try {
-            File file = new File(getExternalCacheDir() + File.separator + "audio.wav");
+public class ApiClient {
 
-            InputStream inputStream = getResources().openRawResource(R.raw.test3);
-            FileOutputStream fileOutputStream = new FileOutputStream(file);
+private static FileUploadService mFileService;
 
-            byte buf[] = new byte[1024];
-            int len;
-            while ((len = inputStream.read(buf)) > 0) {
-                fileOutputStream.write(buf, 0, len);
-            }
-
-            fileOutputStream.close();
-            inputStream.close();
-
-            String s = "file : " + file.length() + " - " + file.exists();
-            Toast.makeText(getApplicationContext(), s, Toast.LENGTH_SHORT).show();
-
-            if (file.exists())
-                uploadFile(file);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
+    public ApiClient() {
     }
+
+
     public interface FileUploadService {
         @Multipart
         @POST("api/v1/nlp")
-        Call<ResponseBody> upload(@Part("description") RequestBody description,
-                                  @Part MultipartBody.Part file);
+        Call<PostModel> upload(@Part("description") RequestBody description,
+                               @Part MultipartBody.Part file);
+
+
     }
 
-    private void uploadFile(File file) {
-        // create upload service client
-        FileUploadService service = ServiceGenerator.createService(FileUploadService.class, this);
 
-        // create RequestBody instance from file
+    public static Call<PostModel>  uploadFile(File file, Activity context) {
+        final PostModel[] mModel = new PostModel[1];
+        if(mFileService == null){
+            mFileService = ServiceGenerator.createService(FileUploadService.class, context);
+        }
         RequestBody requestFile =
                 RequestBody.create(MediaType.parse("multipart/form-data"), file);
 
@@ -102,28 +77,11 @@ public class RetrofitActivity extends AppCompatActivity {
                 RequestBody.create(
                         MediaType.parse("multipart/form-data"), descriptionString);
 
-        final ProgressDialog dialog = ProgressDialog.show(this, "", "Uploading. Please wait...", true);
+        //Retrofit call is already Async
+        Call<PostModel> call = mFileService.upload(description, body);
+        return call;
 
-        // finally, execute the request
-        Call<ResponseBody> call = service.upload(description, body);
-        call.enqueue(new Callback<ResponseBody>() {
-            @Override
-            public void onResponse(Call<ResponseBody> call,
-                                   Response<ResponseBody> response) {
-                Log.v("Upload", "success");
 
-                // TODO : Handle response content
-
-                dialog.dismiss();
-            }
-
-            @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {
-                Log.e("Upload error:", t.getMessage());
-
-                dialog.dismiss();
-            }
-        });
     }
 
     public static class ServiceGenerator {
@@ -164,6 +122,7 @@ public class RetrofitActivity extends AppCompatActivity {
             Retrofit retrofit = builder.client(getUnsafeOkHttpClient()).build();
             return retrofit.create(serviceClass);
         }
+
     }
 
     private static SSLContext getSSLConfig(Context context) throws CertificateException, IOException,
@@ -223,14 +182,17 @@ public class RetrofitActivity extends AppCompatActivity {
             // Create an ssl socket factory with our all-trusting manager
             final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
             HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
-// set your desired log level
-            logging.setLevel(HttpLoggingInterceptor.Level.BODY);
 
+            // set your desired log level
+            logging.setLevel(HttpLoggingInterceptor.Level.HEADERS);
             OkHttpClient.Builder builder = new OkHttpClient.Builder();
+
             builder.sslSocketFactory(sslSocketFactory);
+
+            //I added a 2 min timeOut Australia's Internet take a bit of time.
+            // Not sure how long it would take to upload a larger Audio
             builder.readTimeout(2, TimeUnit.MINUTES);
             builder.connectTimeout(2, TimeUnit.MINUTES);
-//            builder.addNetworkInterceptor((Interceptor) Level.ALL);
             builder.interceptors().add(logging);
             builder.hostnameVerifier(new HostnameVerifier() {
                 @Override
@@ -245,4 +207,6 @@ public class RetrofitActivity extends AppCompatActivity {
             throw new RuntimeException(e);
         }
     }
+
+
 }

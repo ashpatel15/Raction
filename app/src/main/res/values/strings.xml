@@ -19,4 +19,8 @@
     <string name="aar_playing">Playing</string>
     <string name="tutorStart">Hit the record button to begin</string>
     <string name="tutorPlay">Hit the tick button at the top to get the rating</string>
+
+    <string name="magnitude">Magnitude: %.2f</string>
+    <string name="polarity">Polarity: %d</string>
+
 </resources>

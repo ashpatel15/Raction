@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -15,7 +16,10 @@ import android.view.WindowManager;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
+import android.view.animation.ScaleAnimation;
+import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -31,8 +35,13 @@ import omrecorder.AudioChunk;
 import omrecorder.OmRecorder;
 import omrecorder.PullTransport;
 import omrecorder.Recorder;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import wiseowl.com.au.reaction.ApiClient;
 import wiseowl.com.au.reaction.AudioRecorder.AndroidAudioRecorder;
 import wiseowl.com.au.reaction.AudioRecorder.VisualizerHandler;
+import wiseowl.com.au.reaction.CustomUi.ProgressDialogBar;
 import wiseowl.com.au.reaction.R;
 import wiseowl.com.au.reaction.Util;
 import wiseowl.com.au.reaction.db.CandidateModel;
@@ -40,6 +49,7 @@ import wiseowl.com.au.reaction.db.GenericPresenter;
 import wiseowl.com.au.reaction.model.AudioChannel;
 import wiseowl.com.au.reaction.model.AudioSampleRate;
 import wiseowl.com.au.reaction.model.AudioSource;
+import wiseowl.com.au.reaction.model.PostModel;
 
 import static wiseowl.com.au.reaction.R.id.restart;
 
@@ -55,6 +65,8 @@ public class AudioRecorderActivity extends AppCompatActivity implements PullTran
     private boolean keepDisplayOn;
     private int pos = 0;
 
+    CandidateModel model;
+
     private MediaPlayer player;
     private Recorder recorder;
     private VisualizerHandler visualizerHandler;
@@ -62,8 +74,6 @@ public class AudioRecorderActivity extends AppCompatActivity implements PullTran
     private MenuItem saveMenuItem;
     private boolean isRecording;
     private GLAudioVisualizationView visualizerView;
-    private Animation animationFadeIn;
-    private Animation animationFadeOut;
 
     @BindView(R.id.overView)
     RelativeLayout overView;
@@ -82,14 +92,47 @@ public class AudioRecorderActivity extends AppCompatActivity implements PullTran
     @BindView(R.id.play)
     ImageButton playView;
 
+    //Pop up layouts
+    @BindView(R.id.rateLayout)
+    RelativeLayout rateView;
+    @BindView(R.id.progress)
+    ProgressDialogBar dilatingDotsProgressBar;
+    @BindView(R.id.mesgText)
+    TextView msgTxt;
+    @BindView(R.id.polText)
+    TextView polTxt;
+    @BindView(R.id.magText)
+    TextView magTxt;
+    @BindView(R.id.ratingText)
+    LinearLayout ratingLayout;
+    @BindView(R.id.uploading)
+    RelativeLayout uploading;
+    @BindView(R.id.doneRatingBtn)
+    Button doneBtn;
+
     @OnClick(R.id.doneRatingBtn)
     void doneClick() {
         if (pos < (mStringQ.length - 1)) {
             fadeOutAndHideImage(overView, true, false); //fadeout rating animation
-        }else{
+        } else {
             fadeOutAndHideImage(overView, true, true); //fadeout rating animation
         }
 
+    }
+
+    @OnClick(R.id.poor)
+    void poor() {
+        model.setRating("poor");
+    }
+
+    @OnClick(R.id.okay)
+    void okay() {
+        model.setRating("okay");
+    }
+
+    @OnClick(R.id.great)
+    void great() {
+        model.setRating("great");
     }
 
 
@@ -176,6 +219,7 @@ public class AudioRecorderActivity extends AppCompatActivity implements PullTran
         if (autoStart && !isRecording) {
             toggleRecording(null);
         }
+
     }
 
     @Override
@@ -230,7 +274,19 @@ public class AudioRecorderActivity extends AppCompatActivity implements PullTran
             finish();
         } else if (i == R.id.action_save) {
             if (pos < (mStringQ.length - 1)) {
+                stopRecording();    //stop the recording
+                setResult(RESULT_OK);
+
+                //find old model;
+                // model = new GenericPresenter().getSingle(CandidateModel.class,"filePath", filePath);
+                model = new GenericPresenter().add(CandidateModel.newBuilder()
+                        .name(name)
+                        .filePath(filePath)
+                        .build()); //save new path to Realm db
+                getRating(Util.getFileFromPath(filePath, getApplicationContext()));
                 fadeOutAndHideImage(overView, false, false); //fade in rating animation
+                Log.i("ash", "path = " + model.getFilePath());
+
                 nextQuestion();
             } else {
                 //Complete stop of recording
@@ -246,20 +302,18 @@ public class AudioRecorderActivity extends AppCompatActivity implements PullTran
     private void nextQuestion() {
 
         pos++;              //increment question
-        stopRecording();    //stop the recording
-        setResult(RESULT_OK);
         restart();          //restart recording
 
         tvQuestion.setText(String.format(mStringQ[pos], name)); //update new question
         filePath = Environment.getExternalStorageDirectory() + "/" + name + "Q" + pos + ".wav"; //set new file path
 
-        CandidateModel model = new GenericPresenter().addAsync(CandidateModel.newBuilder()
-                .name(name)
-                .filePath(filePath)
-                .magnitude(20)
-                .polarity(100)
-                .sentiment("I love this")
-                .build()); //save new path to Realm db
+//        new GenericPresenter().addAsync(CandidateModel.newBuilder()
+//                .name(name)
+//                .filePath(filePath)
+////                .magnitude(20)
+////                .polarity(100)
+////                .sentiment("I love this")
+//                .build()); //save new path to Realm db
     }
 
     @Override
@@ -344,7 +398,7 @@ public class AudioRecorderActivity extends AppCompatActivity implements PullTran
                     new PullTransport.Default(Util.getMic(source, channel, sampleRate), AudioRecorderActivity.this),
                     new File(filePath));
         }
-        if(recorder != null) {
+        if (recorder != null) {
             recorder.resumeRecording();
         }
     }
@@ -366,17 +420,18 @@ public class AudioRecorderActivity extends AppCompatActivity implements PullTran
                     view.setVisibility(View.VISIBLE);
                 }
 
-                if(finish){
+                if (finish) {
                     stopRecording();
                     setResult(RESULT_OK);
                     finish();
                 }
             }
 
-            public void onAnimationRepeat(Animation animation) {}
+            public void onAnimationRepeat(Animation animation) {
+            }
 
             public void onAnimationStart(Animation animation) {
-                if(view.getVisibility() == View.GONE){
+                if (view.getVisibility() == View.GONE) {
                     view.setVisibility(View.VISIBLE);
                 }
             }
@@ -472,4 +527,92 @@ public class AudioRecorderActivity extends AppCompatActivity implements PullTran
             return false;
         }
     }
+
+    public void stopClick(View v){
+
+    }
+
+    private void uploadingVisablityShow(boolean show) {
+        if(show) {
+            ScaleAnimation fade_in =  new ScaleAnimation(1f, 1f, 1f, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+            fade_in.setDuration(700);     // animation duration in milliseconds
+            fade_in.setFillAfter(true);    // If fillAfter is true, the transformation that this animation performed will persist when it is finished.
+            rateView.startAnimation(fade_in);
+
+
+            dilatingDotsProgressBar.showNow();
+            uploading.setVisibility(View.VISIBLE);
+            ratingLayout.setVisibility(View.GONE);
+            polTxt.setVisibility(View.GONE);
+            magTxt.setVisibility(View.GONE);
+            doneBtn.setVisibility(View.GONE);
+        }else{
+            ScaleAnimation fade_in =  new ScaleAnimation(1f, 1f, 0.5f, 1f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+            fade_in.setDuration(700);     // animation duration in milliseconds
+            fade_in.setFillAfter(true);    // If fillAfter is true, the transformation that this animation performed will persist when it is finished.
+            rateView.startAnimation(fade_in);
+
+
+            dilatingDotsProgressBar.hideNow();
+            uploading.setVisibility(View.GONE);
+            ratingLayout.setVisibility(View.VISIBLE);
+            polTxt.setVisibility(View.VISIBLE);
+            magTxt.setVisibility(View.VISIBLE);
+            doneBtn.setVisibility(View.VISIBLE);
+        }
+
+
+    }
+
+    private void getRating(File file) {
+        uploadingVisablityShow(true);
+
+        //Get the call from the ApiClient
+        Call<PostModel> call = ApiClient.uploadFile(file, this);
+
+        //Get the response from the server
+        call.enqueue(new Callback<PostModel>() {
+            @Override
+            public void onResponse(Call<PostModel> call, Response<PostModel> response) {
+                if (response.isSuccessful()) {
+                    // tasks available
+                    uploadingVisablityShow(false);
+
+                    //set Text to overlay View
+                    msgTxt.setText(response.body().getMessage());
+                    polTxt.setText(String.format(getResources().getString(R.string.polarity), response.body().getPolarity()));
+                    magTxt.setText(String.format(getResources().getString(R.string.magnitude), response.body().getMagnitude()));
+
+                    //set Model to the Realm db
+                    if (model != null) {
+                        model.setMagnitude(response.body().getMagnitude());
+                        model.setPolarity(response.body().getPolarity());
+                        model.setSentiment(response.body().getMessage());
+                        Log.i("ash", "setting model = " + model.getPolarity());
+                    } else {
+                        Log.i("ash", "failed to save to  model");
+
+                    }
+
+                } else {
+                    uploading.setVisibility(View.GONE);
+                    dilatingDotsProgressBar.hideNow();
+                    magTxt.setText("Woops! Something went wrong");
+                    msgTxt.setText("-");
+                    polTxt.setText("-");
+                    // error response, no access to resource?
+                }
+            }
+
+            @Override
+            public void onFailure(Call<PostModel> call, Throwable t) {
+                uploading.setVisibility(View.GONE);
+                dilatingDotsProgressBar.hideNow();
+                magTxt.setText("Woops! Something went wrong");
+                msgTxt.setText("-");
+                polTxt.setText("-");
+            }
+        });
+    }
+
 }
